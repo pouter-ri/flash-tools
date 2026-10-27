@@ -1,0 +1,34 @@
+{
+  "name": "flash-tools",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "private": true,
+  "dependencies": {
+    "@react-native-async-storage/async-storage": "^3.1.1",
+    "expo": "~57.0.13",
+    "expo-camera": "~57.0.6",
+    "expo-localization": "~57.0.2",
+    "expo-sensors": "~57.0.3",
+    "expo-status-bar": "~57.0.1",
+    "i18n-js": "^4.5.3",
+    "react": "19.2.3",
+    "react-native": "0.86.2",
+    "react-native-google-mobile-ads": "^15.8.3",
+    "react-native-safe-area-context": "^5.9.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/react": "~19.2.3",
+    "babel-plugin-transform-remove-console": "^6.9.4",
+    "babel-preset-expo": "^57.0.7",
+    "jest": "^30.5.2",
+    "react-test-renderer": "^19.2.3",
+    "typescript": "~5.9.2"
+  },
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "typecheck": "tsc --noEmit",
+    "test": "jest"
+  }
+}

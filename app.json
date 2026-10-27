@@ -1,0 +1,58 @@
+{
+    "expo":  {
+                 "name":  "Flash Tools",
+                 "slug":  "flashtools",
+                 "scheme":  "com.pouter.flashtools",
+                 "version":  "1.0.0",
+                 "orientation":  "portrait",
+                 "icon":  "./assets/icon.png",
+                 "userInterfaceStyle":  "automatic",
+                 "ios":  {
+                             "supportsTablet":  true,
+                             "bundleIdentifier":  "com.pouter.flashtools",
+                             "buildNumber":  "1",
+                             "infoPlist":  {
+                                               "ITSAppUsesNonExemptEncryption":  false,
+                                               "NSCameraUsageDescription":  "Flash Tools uses the camera flash as a flashlight.",
+                                               "NSMotionUsageDescription":  "Flash Tools uses motion sensors for the compass and bubble level."
+                                           }
+                         },
+                 "android":  {
+                                 "package":  "com.pouter.flashtools",
+                                 "versionCode":  1,
+                                 "adaptiveIcon":  {
+                                                      "backgroundColor":  "#0a0a18",
+                                                      "foregroundImage":  "./assets/icon.png"
+                                                  },
+                                 "permissions":  [
+                                                     "CAMERA",
+                                                     "FLASHLIGHT",
+                                                     "INTERNET"
+                                                 ]
+                             },
+                 "plugins":  [
+                                 [
+                                     "react-native-google-mobile-ads",
+                                     {
+                                         "androidAppId":  "ca-app-pub-3940256099942544~3347511713",
+                                         "iosAppId":  "ca-app-pub-3940256099942544~1458002511",
+                                         "delayAppMeasurementInit":  false,
+                                         "optimizeInitialization":  true,
+                                         "optimizeAdLoading":  true,
+                                         "androidTestDeviceIds":  [
+
+                                                                  ],
+                                         "userTrackingUsageDescription":  "This identifier is used to deliver personalized ads."
+                                     }
+                                 ],
+                                 [
+                                     "expo-camera",
+                                     {
+                                         "cameraPermission":  "Flash Tools uses the camera flash as a flashlight."
+                                     }
+                                 ],
+                                 "expo-localization",
+                                 "expo-status-bar"
+                             ]
+             }
+}
