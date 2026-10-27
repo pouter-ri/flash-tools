@@ -6,3 +6,8 @@ android/
 ios/
 .env
 *.log
+
+# signing secrets - NEVER commit
+upload-key*.jks
+keystore-password.txt
+android/keystore.properties
