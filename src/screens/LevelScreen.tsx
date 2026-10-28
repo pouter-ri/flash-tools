@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, useWindowDimensions } from 'react-native';
 import { Accelerometer } from 'expo-sensors';
 import { SPACING, TYPOGRAPHY, type Palette } from '../theme/colors';
 import { useTheme } from '../theme/ThemeContext';
@@ -43,18 +43,22 @@ export default function LevelScreen({ goBack }: { goBack: () => void }) {
   }, []);
 
   const level = tilt !== null && isLevel(tilt);
-  const dx = tilt ? (tilt.pitch / 45) * BUBBLE_RANGE_PX : 0;
-  const dy = tilt ? (tilt.roll / 45) * BUBBLE_RANGE_PX : 0;
+  // Shrink the pad on short (landscape) screens so nothing clips.
+  const { height: windowHeight } = useWindowDimensions();
+  const padSize = Math.min(240, Math.max(150, Math.floor(windowHeight * 0.46)));
+  const range = (padSize / 240) * BUBBLE_RANGE_PX;
+  const dx = tilt ? (tilt.pitch / 45) * range : 0;
+  const dy = tilt ? (tilt.roll / 45) * range : 0;
 
   return (
     <View style={s.root}>
       <ScreenHeader title={t('level')} subtitle={t('levelHint')} onBack={goBack} backLabel={t('back')} />
-      <View style={s.body}>
+      <ScrollView contentContainerStyle={s.body} showsVerticalScrollIndicator={false}>
         {!available || tilt === null ? (
           <Text style={s.msg}>{available ? t('loading') : t('sensorUnavailable')}</Text>
         ) : (
           <>
-            <View style={[s.pad, level && s.padLevel]}>
+            <View style={[s.pad, level && s.padLevel, { width: padSize, height: padSize, borderRadius: padSize / 2 }]}>
               <View style={s.ring} />
               <View style={[s.bubble, { transform: [{ translateX: dx }, { translateY: dy }] }]} />
             </View>
@@ -66,7 +70,7 @@ export default function LevelScreen({ goBack }: { goBack: () => void }) {
             </Text>
           </>
         )}
-      </View>
+      </ScrollView>
     </View>
   );
 }
@@ -78,7 +82,7 @@ const styles = (c: Palette) =>
       backgroundColor: c.bg,
     },
     body: {
-      flex: 1,
+      flexGrow: 1,
       alignItems: 'center',
       justifyContent: 'center',
       padding: SPACING.lg,

@@ -1,4 +1,6 @@
-import { pxPerCm, rulerPx, rulerTicks } from '../tools';
+import * as fs from 'fs';
+import * as path from 'path';
+import { pxPerCm, rulerDp, rulerPx, rulerTicks } from '../tools';
 
 describe('pxPerCm', () => {
   it('converts mdpi (160dpi) to ~63px per cm', () => {
@@ -27,6 +29,46 @@ describe('rulerPx', () => {
     const dpiFromRatio = 2.625 * 160;
     expect(rulerPx(12, 'cm', dpiFromRatio)).toBeGreaterThan(1000);
     expect(rulerPx(12, 'cm', 2.625)).toBeLessThan(50);
+  });
+});
+
+describe('rulerDp', () => {
+  it('converts physical px to layout dp by dividing out the density', () => {
+    // Regression: feeding rulerPx() (physical px) straight into styles
+    // inflated the blade ~2.6x on a 2.625-density phone.
+    expect(rulerDp(1, 'cm', 420, 2.625)).toBeCloseTo(rulerPx(1, 'cm', 160), 5);
+    expect(rulerDp(1, 'inch', 420, 2.625)).toBeCloseTo(160, 5);
+  });
+
+  it('scales linearly and falls back to density 1 for bad input', () => {
+    expect(rulerDp(2, 'cm', 420, 2.625)).toBeCloseTo(2 * rulerDp(1, 'cm', 420, 2.625), 5);
+    expect(rulerDp(1, 'cm', 420, 0)).toBeCloseTo(rulerPx(1, 'cm', 420), 5);
+    expect(rulerDp(1, 'cm', 420, null)).toBeCloseTo(rulerPx(1, 'cm', 420), 5);
+  });
+});
+
+describe('ruler uses exact panel DPI, no manual calibration', () => {
+  const root = path.resolve(__dirname, '..', '..', '..');
+  const read = (rel: string): string => fs.readFileSync(path.join(root, rel), 'utf8');
+
+  it('RulerScreen reads the true physical DPI from the native module', () => {
+    const src = read('src/screens/RulerScreen.tsx');
+    expect(src).toContain('getExactDpi');
+    expect(src).toContain('exactDpi');
+    expect(src).toContain('rulerDp(1, unit, dpi, density)');
+  });
+
+  it('RulerScreen has no calibration UI or calibration offset left', () => {
+    const src = read('src/screens/RulerScreen.tsx');
+    expect(src).not.toContain('calib');
+    expect(src).not.toContain('Calibration');
+  });
+
+  it('native module exposes DisplayMetrics xdpi/ydpi', () => {
+    const src = read('android/app/src/main/java/com/pouter/flashtools/ScreenMetricsModule.kt');
+    expect(src).toContain('displayMetrics');
+    expect(src).toContain('"xdpi"');
+    expect(src).toContain('"ydpi"');
   });
 });
 

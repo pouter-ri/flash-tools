@@ -10,6 +10,7 @@ import {
   shouldTriggerInterstitial,
   cooldownElapsed,
   tryShowAd,
+  resolveAdUnitId,
   RANDOM_MIN_DELAY_MS,
   RANDOM_MAX_DELAY_MS,
 } from '../ads';
@@ -66,5 +67,17 @@ describe('tryShowAd (shared-contract shape)', () => {
     const res = await tryShowAd(ref as any);
     expect(res.shown).toBe(true);
     expect(showIfLoaded).toHaveBeenCalled();
+  });
+});
+
+describe('resolveAdUnitId', () => {
+  it('uses the real id when .env provides one', () => {
+    expect(resolveAdUnitId('ca-app-pub-1/2', 'TEST')).toBe('ca-app-pub-1/2');
+  });
+
+  it('falls back to the test id when .env is empty or blank', () => {
+    expect(resolveAdUnitId('', 'TEST')).toBe('TEST');
+    expect(resolveAdUnitId('   ', 'TEST')).toBe('TEST');
+    expect(resolveAdUnitId(undefined, 'TEST')).toBe('TEST');
   });
 });

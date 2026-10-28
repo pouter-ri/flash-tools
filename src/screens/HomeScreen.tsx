@@ -3,6 +3,7 @@ import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
 import { RADIUS, SPACING, TYPOGRAPHY, type Palette } from '../theme/colors';
 import { useTheme } from '../theme/ThemeContext';
 import { ToolCard } from '../components/ui';
+import AdBanner from '../components/AdBanner';
 import { t } from '../services/i18n';
 
 export type ToolRoute = 'Flashlight' | 'Compass' | 'Ruler' | 'Level';
@@ -11,7 +12,8 @@ export default function HomeScreen({ navigate }: { navigate: (name: ToolRoute) =
   const { mode, colors, toggle } = useTheme();
   const s = styles(colors);
   return (
-    <ScrollView style={s.root} contentContainerStyle={s.content}>
+    <View style={s.root}>
+    <ScrollView style={s.scroll} contentContainerStyle={s.content}>
       <View style={s.hero}>
         <Text style={s.appName}>{t('appName')}</Text>
         <Text style={s.tagline}>{t('tagline')}</Text>
@@ -19,12 +21,14 @@ export default function HomeScreen({ navigate }: { navigate: (name: ToolRoute) =
       <ToolCard icon="🔦" title={t('flashlight')} desc={t('flashlightDesc')} onPress={() => navigate('Flashlight')} />
       <ToolCard icon="🧭" title={t('compass')} desc={t('compassDesc')} onPress={() => navigate('Compass')} />
       <ToolCard icon="📏" title={t('ruler')} desc={t('rulerDesc')} onPress={() => navigate('Ruler')} />
-      <ToolCard icon="🫧" title={t('level')} desc={t('levelDesc')} onPress={() => navigate('Level')} />
+      <ToolCard icon="⚖️" title={t('level')} desc={t('levelDesc')} onPress={() => navigate('Level')} />
       <Pressable onPress={toggle} accessibilityRole="button" style={s.themeRow}>
         <Text style={s.themeLabel}>{t('theme')}</Text>
         <Text style={s.themeValue}>{mode === 'dark' ? t('darkMode') : t('lightMode')}</Text>
       </Pressable>
     </ScrollView>
+    <AdBanner />
+    </View>
   );
 }
 
@@ -34,6 +38,7 @@ const styles = (c: Palette) =>
       flex: 1,
       backgroundColor: c.bg,
     },
+    scroll: { flex: 1 },
     content: {
       padding: SPACING.lg,
       paddingBottom: SPACING.xxl,

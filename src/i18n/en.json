@@ -34,8 +34,5 @@
   "loading": "Loading...",
   "adLoading": "Loading ad...",
   "adNotReady": "Ad is not ready yet, please try again.",
-  "premiumThanks": "Thanks! Steel ruler unlocked.",
-  "calibration": "Scale calibration",
-  "calibrationHint": "Nudge the scale to match a physical ruler",
-  "calibrationUnit": "px/in"
+  "premiumThanks": "Thanks! Steel ruler unlocked."
 }

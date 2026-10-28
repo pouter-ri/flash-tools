@@ -81,6 +81,22 @@ export function rulerPx(units: number, unit: 'cm' | 'inch', dpi?: number | null)
   return cm * pxPerCm(dpi);
 }
 
+/**
+ * Layout length (density-independent pixels) for a ruler of `units`.
+ * rulerPx() is physical pixels — React Native styles need dp, so divide by
+ * the PixelRatio density. Passing raw physical px into styles inflates the
+ * blade by density× (2.6× on a 2.625 device).
+ */
+export function rulerDp(
+  units: number,
+  unit: 'cm' | 'inch',
+  dpi?: number | null,
+  density?: number | null,
+): number {
+  const d = typeof density === 'number' && Number.isFinite(density) && density > 0 ? density : 1;
+  return rulerPx(units, unit, dpi) / d;
+}
+
 /** Tick marks for a ruler: every `minorStep` units, labeled every `majorStep`. */
 export interface RulerTick {
   value: number;

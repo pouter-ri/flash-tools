@@ -41,9 +41,6 @@ export const KEY = {
   adLoading: 'adLoading',
   adNotReady: 'adNotReady',
   premiumThanks: 'premiumThanks',
-  calibration: 'calibration',
-  calibrationHint: 'calibrationHint',
-  calibrationUnit: 'calibrationUnit',
 } as const;
 
 export type TranslationKey = (typeof KEY)[keyof typeof KEY];

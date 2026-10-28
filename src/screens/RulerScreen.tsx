@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, Pressable, StyleSheet, Dimensions, PixelRatio } from 'react-native';
+import { View, Text, ScrollView, Pressable, StyleSheet, PixelRatio, useWindowDimensions } from 'react-native';
 import { RADIUS, SPACING, TYPOGRAPHY, type Palette } from '../theme/colors';
 import { useTheme } from '../theme/ThemeContext';
 import { ScreenHeader } from '../components/ui';
-import { rulerPx, rulerTicks } from '../services/tools';
+import { rulerDp, rulerTicks } from '../services/tools';
 import { getRulerUnit, setRulerUnit, isSteelUnlocked, type RulerUnit } from '../services/prefs';
-import { loadCalibration, saveCalibration, clampCalibration } from '../services/storage';
+import { getExactDpi } from '../services/display';
 import { t } from '../services/i18n';
 import type { AdHandle } from '../components/AdMobManager';
 
@@ -27,20 +27,22 @@ export default function RulerScreen({
   const [unit, setUnit] = useState<RulerUnit>('cm');
   const [steel, setSteel] = useState(false);
   const [busy, setBusy] = useState(false);
-  // PixelRatio.get() is a density ratio (e.g. 2.625), not DPI — scale to px/inch.
-  const [dpi, setDpi] = useState<number>(() => PixelRatio.get() * 160);
-  const [calib, setCalib] = useState<number>(0);
+  const density = PixelRatio.get();
+  // Exact panel DPI from the native module (DisplayMetrics.xdpi). Until it
+  // resolves, fall back to the nominal density-bucket DPI.
+  const [exactDpi, setExactDpi] = useState<number | null>(null);
+  const dpi = exactDpi ?? density * 160;
   const { colors } = useTheme();
   const s = styles(colors);
 
   useEffect(() => {
     let active = true;
     (async () => {
-      const [u, st, c] = await Promise.all([getRulerUnit(), isSteelUnlocked(), loadCalibration()]);
+      const [u, st, exact] = await Promise.all([getRulerUnit(), isSteelUnlocked(), getExactDpi()]);
       if (!active) return;
       setUnit(u);
       setSteel(st);
-      setCalib(c);
+      if (exact) setExactDpi(exact.xdpi);
     })();
     return () => {
       active = false;
@@ -51,12 +53,6 @@ export default function RulerScreen({
     const next: RulerUnit = unit === 'cm' ? 'inch' : 'cm';
     setUnit(next);
     await setRulerUnit(next);
-  };
-
-  const nudgeCalib = async (delta: number) => {
-    const next = clampCalibration(calib + delta);
-    setCalib(next);
-    await saveCalibration(next);
   };
 
   const unlock = async () => {
@@ -74,13 +70,15 @@ export default function RulerScreen({
     }
   };
 
-  const screenW = Dimensions.get('window').width - SPACING.lg * 2;
+  // Re-read on every rotation so the blade always fits the current width.
+  const { width: windowWidth } = useWindowDimensions();
+  const screenW = windowWidth - SPACING.lg * 2;
   const minor = unit === 'cm' ? 0.1 : 0.0625; // 1mm or 1/16in
   const major = unit === 'cm' ? 1 : 1;
   const maxUnits = unit === 'cm' ? 12 : 5;
   const ticks = rulerTicks(maxUnits, minor, major);
-  // Calibration offset is stored in px per inch; fold it into the dpi.
-  const pxPerUnit = rulerPx(1, unit, dpi + calib) || 1;
+  // Exact physical dpi converted to dp — styles must get dp, not physical px.
+  const pxPerUnit = rulerDp(1, unit, dpi, density) || 1;
   const pxPerMinor = pxPerUnit * minor;
 
   return (
@@ -95,54 +93,30 @@ export default function RulerScreen({
           </Pressable>
         }
       />
-      <ScrollView horizontal contentContainerStyle={s.scroll} showsHorizontalScrollIndicator={false}>
-        <View style={[s.blade, steel ? s.bladeSteel : s.bladePlain, { width: Math.min(screenW, maxUnits * pxPerUnit) }]}>
-          {steel ? <View style={s.sheen} /> : null}
-          <View style={s.ticks}>
-            {ticks.map((tk, i) => (
-              <View key={i} style={[s.tickCol, { width: pxPerMinor }]}>
-                <View
-                  style={[
-                    s.tick,
-                    tk.major ? s.tickMajor : s.tickMinor,
-                    steel && s.tickSteel,
-                  ]}
-                />
-                {tk.major ? <Text style={[s.tickLabel, steel && s.tickLabelSteel]}>{tk.value}</Text> : null}
-              </View>
-            ))}
-          </View>
-          <Text style={[s.unitLabel, steel && s.tickLabelSteel]}>
-            {unit === 'cm' ? 'cm' : 'inch'}
-          </Text>
-        </View>
-      </ScrollView>
-      <View style={s.foot}>
-        <View style={s.calibBlock}>
-          <Text style={s.steelTitle}>{t('calibration')}</Text>
-          <Text style={s.steelState}>{t('calibrationHint')}</Text>
-          <View style={s.calibRow}>
-            <Pressable
-              onPress={() => nudgeCalib(-1)}
-              accessibilityRole="button"
-              accessibilityLabel="−"
-              style={s.calibBtn}
-            >
-              <Text style={s.calibBtnText}>−</Text>
-            </Pressable>
-            <Text style={s.calibValue}>
-              {calib >= 0 ? '+' : ''}{calib} {t('calibrationUnit')}
+      <ScrollView contentContainerStyle={s.body} showsVerticalScrollIndicator={false}>
+        <ScrollView horizontal contentContainerStyle={s.scroll} showsHorizontalScrollIndicator={false}>
+          <View style={[s.blade, steel ? s.bladeSteel : s.bladePlain, { width: Math.min(screenW, maxUnits * pxPerUnit) }]}>
+            {steel ? <View style={s.sheen} /> : null}
+            <View style={s.ticks}>
+              {ticks.map((tk, i) => (
+                <View key={i} style={[s.tickCol, { width: pxPerMinor }]}>
+                  <View
+                    style={[
+                      s.tick,
+                      tk.major ? s.tickMajor : s.tickMinor,
+                      steel && s.tickSteel,
+                    ]}
+                  />
+                  {tk.major ? <Text style={[s.tickLabel, steel && s.tickLabelSteel]}>{tk.value}</Text> : null}
+                </View>
+              ))}
+            </View>
+            <Text style={[s.unitLabel, steel && s.tickLabelSteel]}>
+              {unit === 'cm' ? 'cm' : 'inch'}
             </Text>
-            <Pressable
-              onPress={() => nudgeCalib(1)}
-              accessibilityRole="button"
-              accessibilityLabel="+"
-              style={s.calibBtn}
-            >
-              <Text style={s.calibBtnText}>+</Text>
-            </Pressable>
           </View>
-        </View>
+        </ScrollView>
+        <View style={s.foot}>
         <View style={s.steelRow}>
           <Text style={s.steelTitle}>{t('steelTheme')}</Text>
           <Text style={s.steelState}>{steel ? t('unlocked') : t('steelLocked')}</Text>
@@ -159,7 +133,8 @@ export default function RulerScreen({
         ) : (
           <Text style={s.thanks}>{t('premiumThanks')}</Text>
         )}
-      </View>
+        </View>
+      </ScrollView>
     </View>
   );
 }
@@ -169,6 +144,9 @@ const styles = (c: Palette) =>
     root: {
       flex: 1,
       backgroundColor: c.bg,
+    },
+    body: {
+      flexGrow: 1,
     },
     unitBtn: {
       backgroundColor: c.primaryGlow,
@@ -272,35 +250,6 @@ const styles = (c: Palette) =>
       alignItems: 'center',
       justifyContent: 'center',
       minHeight: 44,
-    },
-    calibBlock: {
-      marginBottom: SPACING.lg,
-    },
-    calibRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginTop: SPACING.sm,
-    },
-    calibBtn: {
-      backgroundColor: c.cardBgSolid,
-      borderWidth: 1,
-      borderColor: c.cardBorder,
-      borderRadius: RADIUS.md,
-      minWidth: 44,
-      minHeight: 44,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    calibBtnText: {
-      ...TYPOGRAPHY.heading,
-      color: c.text,
-    },
-    calibValue: {
-      ...TYPOGRAPHY.body,
-      color: c.textDim,
-      marginHorizontal: SPACING.md,
-      minWidth: 90,
-      textAlign: 'center',
     },
     unlockBusy: {
       opacity: 0.6,

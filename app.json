@@ -4,7 +4,7 @@
                  "slug":  "flashtools",
                  "scheme":  "com.pouter.flashtools",
                  "version":  "1.0.0",
-                 "orientation":  "portrait",
+                 "orientation":  "default",
                  "icon":  "./assets/icon.png",
                  "userInterfaceStyle":  "automatic",
                  "ios":  {
@@ -34,7 +34,7 @@
                                  [
                                      "react-native-google-mobile-ads",
                                      {
-                                         "androidAppId":  "ca-app-pub-3940256099942544~3347511713",
+                                         "androidAppId":  "ca-app-pub-2363521254351511~7759261351",
                                          "iosAppId":  "ca-app-pub-3940256099942544~1458002511",
                                          "delayAppMeasurementInit":  false,
                                          "optimizeInitialization":  true,

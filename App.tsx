@@ -106,7 +106,7 @@ function AppContent() {
   }, [stack.length, goBack]);
 
   return (
-    <SafeAreaView style={[styles.root, { backgroundColor: colors.bg }]} edges={['top', 'bottom']}>
+    <SafeAreaView style={[styles.root, { backgroundColor: colors.bg }]} edges={['top', 'bottom', 'left', 'right']}>
       <StatusBar style={colors.statusBar} />
       <AdMobManager ref={adRef} />
       {top === 'Home' ? <HomeScreen navigate={navigate as (name: ToolRoute) => void} /> : null}

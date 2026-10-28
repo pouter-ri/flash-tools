@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, useWindowDimensions } from 'react-native';
 import { Magnetometer } from 'expo-sensors';
 import { RADIUS, SPACING, TYPOGRAPHY, type Palette } from '../theme/colors';
 import { useTheme } from '../theme/ThemeContext';
@@ -42,17 +42,21 @@ export default function CompassScreen({ goBack }: { goBack: () => void }) {
 
   const cardinal = heading === null ? '--' : cardinalFromHeading(heading);
 
+  // Shrink the dial on short (landscape) screens so nothing clips.
+  const { height: windowHeight } = useWindowDimensions();
+  const dialSize = Math.min(260, Math.max(150, Math.floor(windowHeight * 0.5)));
+
   return (
     <View style={s.root}>
       <ScreenHeader title={t('compass')} onBack={goBack} backLabel={t('back')} />
-      <View style={s.body}>
+      <ScrollView contentContainerStyle={s.body} showsVerticalScrollIndicator={false}>
         {!available ? (
           <View style={s.unavail}>
             <Text style={s.unavailText}>{t('sensorUnavailable')}</Text>
           </View>
         ) : (
           <>
-            <View style={s.dial}>
+            <View style={[s.dial, { width: dialSize, height: dialSize, borderRadius: dialSize / 2 }]}>
               <View style={[s.needleWrap, { transform: [{ rotate: `${360 - (heading ?? 0)}deg` }] }]}>
                 <Text style={s.needleNorth}>▲ N</Text>
               </View>
@@ -64,7 +68,7 @@ export default function CompassScreen({ goBack }: { goBack: () => void }) {
             <Text style={s.cal}>{t('calibrating')}</Text>
           </>
         )}
-      </View>
+      </ScrollView>
     </View>
   );
 }
@@ -76,7 +80,7 @@ const styles = (c: Palette) =>
       backgroundColor: c.bg,
     },
     body: {
-      flex: 1,
+      flexGrow: 1,
       alignItems: 'center',
       justifyContent: 'center',
       padding: SPACING.lg,

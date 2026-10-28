@@ -82,3 +82,12 @@ export const tryShowAd = async (
 
 export const RANDOM_MIN_DELAY_MS = 45000;
 export const RANDOM_MAX_DELAY_MS = 120000;
+
+/**
+ * Resolve a banner unit id: real id from .env when set, Google test id
+ * otherwise (dev builds keep showing test ads instead of crashing).
+ */
+export function resolveAdUnitId(envValue: string | undefined, testId: string): string {
+  const id = (envValue ?? '').trim();
+  return id.length > 0 ? id : testId;
+}
