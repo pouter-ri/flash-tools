@@ -24,7 +24,6 @@ export const KEY = {
   cameraPermissionNeeded: 'cameraPermissionNeeded',
   allowCamera: 'allowCamera',
   heading: 'heading',
-  calibrating: 'calibrating',
   sensorUnavailable: 'sensorUnavailable',
   cm: 'cm',
   inch: 'inch',

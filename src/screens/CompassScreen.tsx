@@ -65,7 +65,6 @@ export default function CompassScreen({ goBack }: { goBack: () => void }) {
                 <Text style={s.cardinal}>{cardinal}</Text>
               </View>
             </View>
-            <Text style={s.cal}>{t('calibrating')}</Text>
           </>
         )}
       </ScrollView>
@@ -115,12 +114,6 @@ const styles = (c: Palette) =>
       ...TYPOGRAPHY.title,
       color: c.primary,
       marginTop: 4,
-    },
-    cal: {
-      ...TYPOGRAPHY.caption,
-      color: c.textMuted,
-      marginTop: SPACING.xl,
-      textAlign: 'center',
     },
     unavail: {
       padding: SPACING.xl,
